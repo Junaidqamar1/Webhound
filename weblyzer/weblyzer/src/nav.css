@@ -1,0 +1,99 @@
+/* NAV */
+.nav {
+  width: 100%;
+  position: sticky;
+  top: 0;
+  z-index: 999;
+
+  display: flex;
+  align-items: center;
+  padding-left: 8%;
+  padding-top: 20px;
+
+  /* GLASS (no solid background) */
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* KEEP EVERYTHING ELSE SAME */
+
+.header {
+  /* max-width: 1200px; */
+}
+
+/* LOGO CONTAINER */
+.logo {
+  display: flex;
+  align-items: center;
+  position: relative;
+  isolation: isolate;
+}
+
+/* TEXT */
+.site-name {
+  font-size: 26px;
+  font-weight: 600;
+  color: black;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  position: relative;
+  z-index: 10;
+}
+
+/* WEB highlight */
+.web {
+  color: #cc3b33;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+/* ONLY "d" blends */
+.blend {
+  mix-blend-mode: difference;
+  color: white;
+}
+
+/* STAR */
+.star-wrap {
+  position: absolute;
+  right: -20px;
+  top: -3px;
+  width: 40px;
+  height: 40px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.star-wrap svg {
+  width: 100%;
+  height: 100%;
+  animation: rotateStar 10s linear infinite;
+}
+
+/* STAR STYLE */
+.star-shape {
+  fill: #cc3b33;
+  opacity: 0.95;
+  filter: drop-shadow(0 0 12px rgba(204, 59, 51, 0.5));
+}
+
+/* ANIMATION */
+@keyframes rotateStar {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(180deg) scale(1.08);
+  }
+  100% {
+    transform: rotate(360deg) scale(1);
+  }
+}
+
+/* HOVER BOOST */
+.logo:hover .star-wrap svg {
+  animation-duration: 4s;
+  filter: drop-shadow(0 0 18px rgba(204, 59, 51, 0.8));
+}
