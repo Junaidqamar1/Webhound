@@ -5,7 +5,7 @@
   background: #fafafa;
 }
 
-/* 🔥 BACKGROUND GLOW BLOBS */
+
 
 .section2::before {
   content: "";
@@ -19,7 +19,7 @@
   animation: floatBlob 8s ease-in-out infinite;
 }
 
-.section2::after {
+/* .section2::after {
   content: "";
   position: absolute;
   width: 400px;
@@ -29,7 +29,7 @@
   right: -100px;
   filter: blur(100px);
   animation: floatBlob 10s ease-in-out infinite reverse;
-}
+} */
 .bg-shapes {
   position: absolute;
   inset: 0;
@@ -37,7 +37,6 @@
   pointer-events: none;
 }
 
-/* FLOATING OBJECTS */
 
 .shape {
   position: absolute;
@@ -118,14 +117,13 @@
   color: #e74c3c;
 }
 
-/* 🔥 PIPELINE */
+
 
 .pipeline {
   position: relative;
   padding-left: 10px;
 }
 
-/* vertical glowing line */
 .pipeline::before {
   content: "";
   position: absolute;
@@ -141,7 +139,6 @@
   );
 }
 
-/* moving progress light */
 .pipeline::after {
   content: "";
   position: absolute;
@@ -185,7 +182,6 @@
   transform: translateX(10px);
 }
 
-/* 🔥 DOT (UPGRADED) */
 
 .dot {
   width: 14px;
@@ -197,7 +193,6 @@
   transition: all 0.3s ease;
 }
 
-/* inner glow ring */
 .dot::after {
   content: "";
   position: absolute;
@@ -207,14 +202,14 @@
   transition: 0.3s;
 }
 
-/* ACTIVE DOT */
+
 
 .pipeline-step.active .dot {
   background: #e74c3c;
   box-shadow: 0 0 12px rgba(231, 76, 60, 0.6);
 }
 
-/* pulse ring */
+
 .pipeline-step.active .dot::after {
   border-color: rgba(231, 76, 60, 0.4);
   animation: pulse 1.5s infinite;
@@ -234,7 +229,6 @@
   }
 }
 
-/* TEXT */
 
 .pipeline-step span {
   font-weight: 500;
@@ -246,7 +240,6 @@
   color: #111;
 }
 
-/* RIGHT CARD (UPGRADED DEPTH) */
 .result-card {
   padding: 35px;
   border-radius: 24px;
@@ -273,7 +266,7 @@
   }
 }
 
-/* gradient glow layer */
+
 .result-card::after {
   content: "";
   position: absolute;
@@ -285,7 +278,6 @@
   opacity: 0.25;
 }
 
-/* shine */
 .result-card::before {
   content: "";
   position: absolute;
@@ -316,8 +308,6 @@
   color: #333;
 }
 
-/* RESULTS */
-
 .result {
   padding: 10px 14px;
   border-radius: 10px;
@@ -328,7 +318,7 @@
   transition: all 0.4s ease;
 }
 
-/* 🔥 ACTIVE RESULT */
+
 
 .result.show {
   opacity: 1;
@@ -338,7 +328,7 @@
   box-shadow: 0 5px 15px rgba(231, 76, 60, 0.1);
 }
 
-/* RESPONSIVE */
+
 
 @media (max-width: 768px) {
   .container {
