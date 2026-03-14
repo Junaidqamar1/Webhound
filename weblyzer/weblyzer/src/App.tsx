@@ -8,7 +8,7 @@ import Nav from "./Nav";
 
 function App() {
   const [url, setUrl] = useState("");
-  const [report, setReport] = useState<any>(null);
+  const [report, setReport] = useState(null);
   const [loading, setLoading] = useState(false);
 
   const analyze = async () => {
@@ -40,7 +40,7 @@ function App() {
       <Hero url={url} setUrl={setUrl} analyze={analyze} loading={loading} />
       <Section2 />
       <Section3 />
-      <Report report={report} loading={loading} />
+      <Report report={report} />
     </>
   );
 }
