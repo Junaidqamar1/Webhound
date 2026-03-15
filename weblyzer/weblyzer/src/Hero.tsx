@@ -73,7 +73,7 @@ export default function Hero({ url, setUrl, analyze, loading }: HeroProps) {
       </h1>
 
       <p className="hero-subhead font4">
-        Weblyzer maps pages, content, tags, assets, and technologies to describe
+        Webhound maps pages, content, tags, assets, and technologies to describe
         what a website contains — without interpretation or scoring.
       </p>
 

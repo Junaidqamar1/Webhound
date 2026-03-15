@@ -290,5 +290,16 @@
     left: 31%;
   }
 }
+@media (max-width: 400px) {
+  .section-2::before{
+    width: 200px;
+    height: 200px;
+  }
+  .cont2 svg {
+    right: 10px;
+    width: 80px;
+    height: 80px;
+  }
+}
 
 

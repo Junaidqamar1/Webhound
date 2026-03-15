@@ -8,22 +8,20 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* ---------------- FETCH HTML (SMART) ---------------- */
 
 async function fetchHTML(url) {
   try {
-    // ⚡ Try fast fetch first
+  
     const res = await axios.get(url, { timeout: 8000 });
     const html = res.data;
 
-    // if looks empty → fallback to puppeteer
     if (html.length < 2000 || html.includes('id="root"')) {
       throw new Error("Static HTML too weak");
     }
 
     return html;
   } catch {
-    // 🧠 fallback to puppeteer
+    
     const browser = await puppeteer.launch({ headless: "new" });
     const page = await browser.newPage();
 
