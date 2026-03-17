@@ -2,39 +2,97 @@ import express from "express";
 import axios from "axios";
 import cors from "cors";
 import * as cheerio from "cheerio";
-import puppeteer from "puppeteer";
+
+import puppeteer from "puppeteer-extra";
+import StealthPlugin from "puppeteer-extra-plugin-stealth";
+
+puppeteer.use(StealthPlugin());
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
+/* ---------------- NORMALIZE URL ---------------- */
+
+function normalizeUrl(url) {
+  if (!url.startsWith("http")) {
+    return "https://" + url;
+  }
+  return url;
+}
+
+/* ---------------- AUTO SCROLL ---------------- */
+
+async function autoScroll(page) {
+  await page.evaluate(async () => {
+    await new Promise((resolve) => {
+      let totalHeight = 0;
+      const distance = 300;
+
+      const timer = setInterval(() => {
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+
+        if (totalHeight >= document.body.scrollHeight) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 200);
+    });
+  });
+}
+
+/* ---------------- FETCH HTML ---------------- */
 
 async function fetchHTML(url) {
-  try {
-  
-    const res = await axios.get(url, { timeout: 8000 });
-    const html = res.data;
+  url = normalizeUrl(url);
 
-    if (html.length < 2000 || html.includes('id="root"')) {
-      throw new Error("Static HTML too weak");
-    }
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-blink-features=AutomationControlled",
+    ],
+  });
 
-    return html;
-  } catch {
-    
-    const browser = await puppeteer.launch({ headless: "new" });
-    const page = await browser.newPage();
+  const page = await browser.newPage();
 
-    await page.goto(url, {
-      waitUntil: "networkidle2",
-      timeout: 30000,
-    });
+  await page.setUserAgent(
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
+  );
 
-    const html = await page.content();
-    await browser.close();
+  await page.setViewport({
+    width: 1366,
+    height: 768,
+  });
 
-    return html;
-  }
+  await page.goto(url, {
+    waitUntil: "networkidle2",
+    timeout: 60000,
+  });
+
+  /* wait for real content */
+  await page.waitForFunction(() => {
+    return document.body.innerText.length > 1000;
+  });
+
+  await autoScroll(page);
+
+  const html = await page.evaluate(() => document.documentElement.outerHTML);
+
+  const performance = await page.evaluate(() => {
+    const perf = window.performance.timing;
+
+    return {
+      domLoad: perf.domContentLoadedEventEnd - perf.navigationStart,
+      fullLoad: perf.loadEventEnd - perf.navigationStart,
+    };
+  });
+
+  await browser.close();
+
+  return { html, performance };
 }
 
 /* ---------------- TECH STACK ---------------- */
@@ -47,15 +105,15 @@ function detectTechStack(html) {
   };
 
   if (html.includes("_next/")) stack.framework = "Next.js";
-  else if (html.includes("data-reactroot") || html.includes("react"))
-    stack.framework = "React";
+  else if (html.includes("react")) stack.framework = "React";
   else if (html.includes("vue")) stack.framework = "Vue";
 
   if (html.includes("wp-content")) stack.cms = "WordPress";
+  if (html.includes("shopify")) stack.cms = "Shopify";
 
   if (html.includes("jquery")) stack.libraries.push("jQuery");
-  if (html.includes("tailwind")) stack.libraries.push("Tailwind CSS");
   if (html.includes("bootstrap")) stack.libraries.push("Bootstrap");
+  if (html.includes("tailwind")) stack.libraries.push("Tailwind CSS");
 
   return stack;
 }
@@ -64,17 +122,14 @@ function detectTechStack(html) {
 
 function analyzeStructure($) {
   return {
-    hasHeader: $("header").length > 0,
-    hasMain: $("main").length > 0,
-    hasFooter: $("footer").length > 0,
+    header: $("header").length,
+    main: $("main").length,
+    footer: $("footer").length,
     sections: $("section").length,
     headings: {
       h1: $("h1").length,
       h2: $("h2").length,
       h3: $("h3").length,
-      h4: $("h4").length,
-      h5: $("h5").length,
-      h6: $("h6").length,
     },
   };
 }
@@ -93,6 +148,7 @@ function analyzeMeta($) {
 
 function analyzeLinks($, baseUrl) {
   const base = new URL(baseUrl);
+
   let internal = 0;
   let external = 0;
 
@@ -111,12 +167,17 @@ function analyzeLinks($, baseUrl) {
 /* ---------------- IMAGES ---------------- */
 
 function analyzeImages($, baseUrl) {
-  const base = new URL(baseUrl);
   const images = [];
 
-  $("img[src]").each((_, img) => {
+  $("img").each((_, img) => {
+    const src =
+      $(img).attr("src") ||
+      $(img).attr("data-src") ||
+      $(img).attr("data-lazy-src");
+
+    if (!src) return;
+
     try {
-      const src = $(img).attr("src");
       const imgUrl = new URL(src, baseUrl);
 
       images.push({
@@ -128,61 +189,58 @@ function analyzeImages($, baseUrl) {
 
   return {
     total: images.length,
-    preview: images.slice(0, 5), // 🔥 only 5 for UI
-    all: images,
+    preview: images.slice(0, 5),
   };
 }
 
-/* ---------------- FONTS (CLEAN VERSION) ---------------- */
+/* ---------------- FONTS ---------------- */
 
 function analyzeFonts($) {
   const fonts = new Set();
 
-  // Google fonts
   $('link[href*="fonts.googleapis.com"]').each((_, el) => {
     const href = $(el).attr("href");
+
     const matches = href.match(/family=([^:&]+)/g);
 
     if (matches) {
       matches.forEach((f) =>
-        fonts.add(decodeURIComponent(f.replace("family=", ""))),
+        fonts.add(decodeURIComponent(f.replace("family=", "")))
       );
     }
   });
 
-  // Inline styles (clean only names)
-  $("[style*='font-family']").each((_, el) => {
-    const style = $(el).attr("style");
-    const match = style.match(/font-family:\s*([^;]+)/i);
-
-    if (match) {
-      const clean = match[1].split(",")[0].replace(/['"]/g, "").trim();
-      fonts.add(clean);
-    }
-  });
-
-  return [...fonts].slice(0, 10); // 🔥 limit fonts
+  return [...fonts];
 }
 
 /* ---------------- MAIN ENDPOINT ---------------- */
 
 app.post("/analyze", async (req, res) => {
-  const { url } = req.body;
-  if (!url) return res.status(400).json({ error: "URL required" });
+  let { url } = req.body;
+
+  if (!url) {
+    return res.status(400).json({ error: "URL required" });
+  }
+
+  url = normalizeUrl(url);
 
   try {
-    const html = await fetchHTML(url);
+    const { html, performance } = await fetchHTML(url);
+
     const $ = cheerio.load(html);
 
     res.json({
       meta: {
-        title: $("title").text() || null,
+        title: $("title").text(),
         htmlSizeKB: (html.length / 1024).toFixed(2),
       },
 
       techStack: detectTechStack(html),
+
       structure: analyzeStructure($),
+
       metaTags: analyzeMeta($),
+
       links: analyzeLinks($, url),
 
       assets: {
@@ -191,15 +249,21 @@ app.post("/analyze", async (req, res) => {
       },
 
       images: analyzeImages($, url),
+
       fonts: analyzeFonts($),
+
+      performance,
     });
   } catch (err) {
-    res.status(400).json({ error: "Failed to analyze website" });
+    res.status(500).json({
+      error: "Failed to analyze website",
+      details: err.message,
+    });
   }
 });
 
 /* ---------------- SERVER ---------------- */
 
 app.listen(3001, () => {
-  console.log("✅ Backend running on http://localhost:3001");
+  console.log("Server running on http://localhost:3001");
 });
