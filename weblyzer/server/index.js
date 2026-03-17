@@ -9,7 +9,11 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 puppeteer.use(StealthPlugin());
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: "https://webhound.online", // Only allow your frontend
+  methods: ["POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"]
+}));
 app.use(express.json());
 
 /* ---------------- NORMALIZE URL ---------------- */
