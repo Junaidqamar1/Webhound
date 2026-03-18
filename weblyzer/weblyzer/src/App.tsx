@@ -18,7 +18,7 @@ function App() {
       setLoading(true);
       setReport(null);
 
-      const res = await fetch("https://server.deployhub.online/analyze", {
+      const res = await fetch("https://server.webhound.online/analyze", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
