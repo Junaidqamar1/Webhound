@@ -1,0 +1,24 @@
+import "./nav.css";
+
+export default function Nav() {
+  return (
+    <section className="nav">
+      <div className="header">
+        <div className="logo">
+          <p className="site-name font2">
+            <span className="web">WEB</span>
+            Hound
+          </p>
+          <span className="star-wrap">
+            <svg viewBox="0 0 480 480">
+              <path
+                d="M360 289.7c43.4 0 86.9-16.6 120-49.7a169.2 169.2 0 0 0-120-49.7 169.2 169.2 0 0 0 49.7-120c-46.9 0-89.3 19-120 49.7 0-43.4-16.6-86.9-49.7-120a169.2 169.2 0 0 0-49.7 120 169.2 169.2 0 0 0-120-49.7c0 46.8 19 89.3 49.7 120-43.4 0-86.9 16.6-120 49.7a169.2 169.2 0 0 0 120 49.7 169.2 169.2 0 0 0-49.7 120c46.8 0 89.3-19 120-49.7 0 43.4 16.6 86.9 49.7 120a169.2 169.2 0 0 0 49.7-120 169.2 169.2 0 0 0 120 49.7c0-46.9-19-89.3-49.7-120Z"
+                className="star-shape"
+              />
+            </svg>
+          </span>
+        </div>
+      </div>
+    </section>
+  );
+}
